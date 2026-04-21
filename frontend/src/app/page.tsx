@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 
@@ -32,6 +35,35 @@ const mockPosts = [
 ];
 
 export default function Home() {
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
+  const [postLikes, setPostLikes] = useState<Record<number, number>>(
+    mockPosts.reduce((acc, post) => ({ ...acc, [post.id]: post.likes }), {})
+  );
+
+  const handleLike = (postId: number) => {
+    setLikedPosts((prev) => {
+      const newLiked = new Set(prev);
+      if (newLiked.has(postId)) {
+        newLiked.delete(postId);
+        setPostLikes((prev) => ({ ...prev, [postId]: prev[postId] - 1 }));
+      } else {
+        newLiked.add(postId);
+        setPostLikes((prev) => ({ ...prev, [postId]: prev[postId] + 1 }));
+      }
+      return newLiked;
+    });
+  };
+
+  const handleComment = (postId: number) => {
+    console.log('Comment on post:', postId);
+    // TODO: Implement comment functionality
+  };
+
+  const handleShare = (postId: number) => {
+    console.log('Share post:', postId);
+    // TODO: Implement share functionality
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background pb-16">
       {/* Header */}
@@ -80,17 +112,33 @@ export default function Home() {
             {/* Post Actions */}
             <div className="p-4">
               <div className="flex items-center gap-4 mb-3">
-                <button className="text-foreground hover:text-accent transition-colors">
-                  <Heart className="w-6 h-6" />
+                <button
+                  onClick={() => handleLike(post.id)}
+                  className={`transition-colors active:scale-95 ${
+                    likedPosts.has(post.id)
+                      ? 'text-white'
+                      : 'text-foreground hover:text-white'
+                  }`}
+                >
+                  <Heart
+                    className="w-6 h-6"
+                    fill={likedPosts.has(post.id) ? 'currentColor' : 'none'}
+                  />
                 </button>
-                <button className="text-foreground hover:text-accent transition-colors">
+                <button
+                  onClick={() => handleComment(post.id)}
+                  className="text-foreground hover:text-white transition-colors active:scale-95"
+                >
                   <MessageCircle className="w-6 h-6" />
                 </button>
-                <button className="text-foreground hover:text-accent transition-colors">
+                <button
+                  onClick={() => handleShare(post.id)}
+                  className="text-foreground hover:text-white transition-colors active:scale-95"
+                >
                   <Share2 className="w-6 h-6" />
                 </button>
               </div>
-              <p className="font-semibold text-sm mb-1">{post.likes} likes</p>
+              <p className="font-semibold text-sm mb-1">{postLikes[post.id]} likes</p>
               <p className="text-sm">
                 <span className="font-semibold">{post.username}</span> {post.caption}
               </p>
